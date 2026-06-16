@@ -4,6 +4,14 @@ modules:
 lint:
   use:
     - STANDARD
+  except:
+    # The contract intentionally reuses domain message types as RPC
+    # request/response payloads (e.g., ExecutionEvent, PolicyBundleUpdate,
+    # RevocationEvent). These are normative types in the FEP spec, not
+    # generated RPC wrappers, so the standard request/response naming rules
+    # do not apply.
+    - RPC_REQUEST_STANDARD_NAME
+    - RPC_RESPONSE_STANDARD_NAME
 breaking:
   use:
     - WIRE_JSON

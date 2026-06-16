@@ -42,6 +42,18 @@ service AuthorityService {
   rpc WatchRevocations(WatchRevocationsRequest) returns (stream RevocationEvent);
 }
 
+// SidecarCredentials are the credentials a Sidecar presents on every Authority
+// request. The Authority resolves (workspace_id, sidecar_id) and verifies
+// pre_shared_key against the stored hash.
+message SidecarCredentials {
+  // Workspace the Sidecar belongs to.
+  string workspace_id = 1;
+  // Authority-assigned Sidecar identity.
+  string sidecar_id = 2;
+  // The Sidecar's pre-shared key, verified against the Authority's stored hash.
+  string pre_shared_key = 3;
+}
+
 // IssueCapabilityRequest carries the agent's identity and requested scope
 // for capability issuance.
 message IssueCapabilityRequest {
@@ -55,6 +67,8 @@ message IssueCapabilityRequest {
   string session_id = 4;
   // Requested TTL in seconds for the capability token.
   int32 requested_ttl_seconds = 5;
+  // Credentials authenticating the connecting Sidecar.
+  SidecarCredentials credentials = 6;
 }
 
 // IssueCapabilityResponse returns either a signed capability token
@@ -76,6 +90,8 @@ message WatchPolicyBundleRequest {
   // Authority uses this to determine whether to send a full bundle or
   // incremental update.
   string current_version = 1;
+  // Credentials authenticating the connecting Sidecar.
+  SidecarCredentials credentials = 2;
 }
 
 // PolicyBundleUpdate wraps a policy bundle push from Authority to Sidecar.
@@ -91,4 +107,6 @@ message WatchRevocationsRequest {
   // Timestamp of the last revocation event the sidecar received.
   // Authority replays any events after this timestamp on reconnect.
   google.protobuf.Timestamp since = 1;
+  // Credentials authenticating the connecting Sidecar.
+  SidecarCredentials credentials = 2;
 }
