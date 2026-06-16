@@ -71,8 +71,8 @@ message ExecutionIntent {
   map<string, string> resource = 1;
   // Typed action parameters — only one action kind is valid per intent.
   oneof params {
-    HttpParams    http = 2;
-    DbQueryParams db   = 3;
+    HttpParams http = 2;
+    DbQueryParams db = 3;
     ToolUseParams tool = 4;
   }
   // Canonical action class from the v0.1 registry (e.g.,
