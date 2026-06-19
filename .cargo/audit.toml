@@ -1,0 +1,11 @@
+# cargo-audit configuration.
+#
+# Documented exceptions for advisories that cannot be fixed without upstream
+# changes. All entries must include an inline comment explaining the reason.
+#
+# Run: cargo audit
+# CI:  cargo audit --deny warnings (fails on any unignored vulnerability or
+#      warning, including unmaintained / yanked advisories)
+
+[advisories]
+ignore = []

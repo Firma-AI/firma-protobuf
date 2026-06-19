@@ -1,0 +1,4 @@
+# Run the crate tests
+[group('test')]
+test test_name="":
+    cargo test {{ test_name }}

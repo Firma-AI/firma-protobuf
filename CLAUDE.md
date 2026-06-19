@@ -4,18 +4,38 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this repository is
 
-`firma-protobuf` is a contract-only repository: it holds **only** the `.proto`
-definitions under `proto/firma/v1/`. There is no build system, no test suite,
-and no language bindings here. This repo is the single source of truth for the
-Firma wire format and is consumed as a git submodule by
-[openfirma](https://github.com/Firma-AI/openfirma) and
-[firma-team](https://github.com/Firma-AI/firma-team). Each consumer compiles
-the `.proto` files into its own language bindings (for Rust, via
-`tonic-prost-build` pointing at the `proto/` directory).
+`firma-protobuf` is the published Rust crate for the Firma `firma.v1`
+Protobuf/gRPC wire contract. The `.proto` definitions under `proto/firma/v1/`
+are the single source of truth for the Firma wire format; `build.rs` compiles
+them into Rust types and Tonic service glue via `tonic-prost-build`, using a
+vendored `protoc` (`protoc-bin-vendored`) so no system `protoc` is required.
+`src/lib.rs` re-exports the generated code under the `v1` module (both gRPC
+client and server stubs).
 
-Consequence: changes here are validated and compiled downstream, not in this
-repo. There are no local build/lint/test commands to run. The unit of work is
-editing `.proto` files correctly and preserving wire compatibility.
+The crate is published to crates.io and consumed by
+[openfirma](https://github.com/Firma-AI/openfirma) and
+[firma-team](https://github.com/Firma-AI/firma-team) as a dependency (it was
+previously vendored as a git submodule). FIR-375 migrated the consumers off the
+submodule onto the crate.
+
+The unit of work is still editing the `.proto` files correctly and preserving
+wire compatibility — the generated Rust is never hand-edited.
+
+## Build commands
+
+Tasks run through [`just`](https://github.com/casey/just) (recipes in `Justfile`
+and `just/`). Run `just` with no arguments to list them.
+
+```bash
+just check    # fmt-check + clippy + test + build + audit + deny (CI parity)
+just fmt      # dprint fmt — format TOML + Markdown + Rust
+just buf lint # lint the .proto wire contract with buf
+just package  # verify the crate packages cleanly for crates.io
+```
+
+Publishing to crates.io happens from CI (`.github/workflows/publish.yml`) when a
+GitHub release is published, via crates.io trusted publishing (OIDC). The release
+tag (e.g. `v0.1.0`) must match the version in `Cargo.toml`.
 
 ## Wire compatibility rules
 
