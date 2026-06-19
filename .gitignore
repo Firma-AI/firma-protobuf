@@ -1,0 +1,27 @@
+# Cargo
+debug
+target
+Cargo.lock
+
+# rustfmt backups
+**/*.rs.bk
+
+# MSVC debug info
+*.pdb
+
+# editors / agents
+# Ignore everything under .claude/ (e.g. plans, local settings) but keep the
+# tracked skills. Note: `.claude/*` (not `.claude/`) is required — a trailing
+# slash excludes the directory itself and git cannot re-include children of an
+# excluded directory, so `!.claude/skills/` would be a no-op.
+.claude/*
+!.claude/skills/
+.claude/plans/
+.cursor/
+.idea/
+.vscode/
+
+# OS
+.DS_Store
+
+.claude/settings.local.json

@@ -1,0 +1,16 @@
+# cocogitto configuration — https://docs.cocogitto.io/
+#
+# Enforces Conventional Commits on pull requests (see the conventional-commits
+# job in .github/workflows/ci.yml). `cog check` walks the commit range since the
+# latest tag and fails on any commit that does not follow the spec.
+#
+# `from_latest_tag = true` scopes the check to commits after the latest tag.
+# `tag_prefix = "v"` matches the `v`-prefixed tags used by cliff.toml.
+
+from_latest_tag = true
+ignore_merge_commits = true
+tag_prefix = "v"
+
+[changelog]
+path = "CHANGELOG.md"
+authors = []
