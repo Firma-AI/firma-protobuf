@@ -1,6 +1,6 @@
 [package]
 name = "firma-protobuf"
-version = "0.1.0"
+version = "0.1.1"
 categories = ["network-programming", "api-bindings"]
 edition = "2024"
 include = [
