@@ -165,6 +165,18 @@ message CapabilityToken {
   // Maximum cumulative budget granted by the Authority (e.g., API cost
   // in USD). Optional — absent means unbounded.
   optional double budget_ceiling = 11;
+  // Policy bundle version at issuance time. Used for audit reconstruction.
+  // optional so consumers can distinguish "absent" from "present but empty";
+  // old tokens, missing values, and an accidental empty value would otherwise
+  // all decode identically, which breaks audit trails.
+  optional string policy_bundle_version = 12;
+  // operator_id of the human who approved this capability, set only when the
+  // human-in-the-loop (HITL) path was used. Absent on non-HITL issuance.
+  optional string approver_id = 13;
+  // Approval record id bound to this capability, set only when the HITL path
+  // was used. Absent otherwise. Recoverable from audit to link the capability
+  // back to the approval that authorized it.
+  optional string approval_id = 14;
 }
 
 // EnforcementDecision is the outcome of Sidecar evaluation.

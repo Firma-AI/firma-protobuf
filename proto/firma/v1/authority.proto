@@ -71,17 +71,58 @@ message IssueCapabilityRequest {
   SidecarCredentials credentials = 6;
 }
 
-// IssueCapabilityResponse returns either a signed capability token
-// or a denial with reason.
+// IssueDecision is the tri-state outcome of an IssueCapability evaluation.
+enum IssueDecision {
+  ISSUE_DECISION_UNSPECIFIED = 0;
+  // Capability granted: a signed token is returned.
+  ISSUE_DECISION_ALLOW = 1;
+  // Denied by policy: a structured reason is returned, no token.
+  ISSUE_DECISION_DENY = 2;
+  // Issuance gated on human approval: an approval handle is returned, no token.
+  ISSUE_DECISION_PENDING_APPROVAL = 3;
+}
+
+// IssueCapabilityResponse returns the outcome of an issuance evaluation: a
+// signed capability token, a structured denial, or a pending-approval handle.
+//
+// `decision` is the authoritative outcome. Every other field is populated per
+// decision as shown below; consumers MUST switch on `decision` and ignore any
+// field not listed for that decision. A well-formed response never populates a
+// field outside its decision's row (e.g. `granted == true` with DENY, or a
+// token with PENDING_APPROVAL, are both invalid and must not be produced).
+//
+//   decision           | populated fields
+//   -------------------|------------------------------------------------------
+//   ALLOW              | token            (granted == true)
+//   DENY               | deny_reason, deny_message            (granted == false)
+//   PENDING_APPROVAL   | approval_id, approval_url, approval_expiry
+//                      |                                     (granted == false)
+//
+// `granted` is exactly (decision == ALLOW) and is retained only for 0.1.x
+// clients that predate `decision`.
 message IssueCapabilityResponse {
-  // True if the capability was granted.
+  // True iff decision == ALLOW. Retained for backward compatibility with
+  // 0.1.x clients that predate `decision`; new clients switch on `decision`.
   bool granted = 1;
-  // The signed capability token (populated only if granted).
+  // The signed capability token. Set only when decision == ALLOW.
   CapabilityToken token = 2;
-  // Reason code if denied (e.g., "POLICY_DENIED", "SCOPE_EXCEEDED").
+  // Structured reason code (e.g., "POLICY_DENIED", "SCOPE_EXCEEDED"). Set only
+  // when decision == DENY.
   string deny_reason = 3;
-  // Human-readable denial message for debugging.
+  // Human-readable denial message for debugging. Set only when decision == DENY.
   string deny_message = 4;
+  // Authoritative tri-state outcome of the evaluation. Consumers switch on
+  // this; the remaining fields are populated per the table above.
+  IssueDecision decision = 5;
+  // Approval record id. Set only when decision == PENDING_APPROVAL. optional so
+  // consumers can distinguish "absent" from "present but empty".
+  optional string approval_id = 6;
+  // URL the operator follows to approve/deny. Set only when
+  // decision == PENDING_APPROVAL. optional for the same absent-vs-empty reason.
+  optional string approval_url = 7;
+  // When the pending approval expires. Set only when
+  // decision == PENDING_APPROVAL.
+  google.protobuf.Timestamp approval_expiry = 8;
 }
 
 // WatchPolicyBundleRequest initiates a policy bundle subscription.
