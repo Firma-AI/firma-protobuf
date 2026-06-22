@@ -17,8 +17,7 @@ Released on {{ timestamp | date(format="%Y-%m-%d") }}
 {%- for group, commits in commits | group_by(attribute="group") %}
 
 ### {{ group | upper_first }}
-
-{% for commit in commits -%}
+{% for commit in commits %}
 - {% if commit.breaking %}💥 {% endif %}{% if commit.scope %}**{{ commit.scope }}:** {% endif %}{{ commit.message | split(pat="\n") | first | trim }}
   {%- if commit.body %}
   > {{ commit.body | split(pat="\n") | join(sep="\n  > ") }}
@@ -39,7 +38,7 @@ commit_parsers = [
   { message = "^perf", group = "Performance" },
   { message = "^doc", group = "Documentation" },
   { message = "^test", group = "Testing" },
-  { message = "^ci", skip = true },
+  { message = "^ci", group = "CI" },
   { message = "^chore", skip = true },
 ]
 filter_commits = false
