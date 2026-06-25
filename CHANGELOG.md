@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.2.0
+
+Released on 2026-06-25
+
+### Removed
+
+- **types:** drop budget fields from the wire contract —
+  `ExecutionMetadata.budget_consumed` (tag 5) and `CapabilityToken.budget_ceiling`
+  (tag 11). Both tag numbers and field names are reserved so they are never
+  reused. This is a breaking wire change; consumers must upgrade.
+
 ## 0.1.2
 
 Released on 2026-06-22
