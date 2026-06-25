@@ -17,7 +17,7 @@ import "google/protobuf/timestamp.proto";
 //     Token parse, signature verify, expiry check, revocation bloom filter.
 //
 //   Stage 2 — Constraint / Policy Enforcement (CEE, < 200µs):
-//     Context build, Cedar eval, budget/scope/threshold checks.
+//     Context build, Cedar eval, scope/threshold checks.
 //
 // The Authority defines the permission perimeter at issuance time.
 // The Sidecar enforces within that perimeter but cannot extend it.
@@ -94,8 +94,11 @@ message ExecutionMetadata {
   string agent_id = 2;
   google.protobuf.Timestamp timestamp = 3;
   optional string trace_id = 4;
-  // Cumulative budget consumed in this session (e.g., API cost in USD).
-  double budget_consumed = 5;
+  // Field 5 (budget_consumed) was removed in 0.2.0: budget tracking was dropped
+  // from the V1 contract. The tag number and name are reserved so they are never
+  // reused with a different meaning.
+  reserved 5;
+  reserved "budget_consumed";
   // Static or pre-computed risk attribute. V1 does not compute risk dynamically;
   // this is a numeric value injected by the agent runtime (or defaulting to 0)
   // and checked against a configured threshold in Cedar.
@@ -162,9 +165,11 @@ message CapabilityToken {
   bytes signature = 9;
   // Token encoding format.
   TokenFormat format = 10;
-  // Maximum cumulative budget granted by the Authority (e.g., API cost
-  // in USD). Optional — absent means unbounded.
-  optional double budget_ceiling = 11;
+  // Field 11 (budget_ceiling) was removed in 0.2.0: budget tracking was dropped
+  // from the V1 contract. The tag number and name are reserved so they are never
+  // reused with a different meaning.
+  reserved 11;
+  reserved "budget_ceiling";
   // Policy bundle version at issuance time. Used for audit reconstruction.
   // optional so consumers can distinguish "absent" from "present but empty";
   // old tokens, missing values, and an accidental empty value would otherwise
