@@ -179,7 +179,10 @@ message CapabilityToken {
   optional string approval_id = 14;
 }
 
-// EnforcementDecision is the outcome of Sidecar evaluation.
+// EnforcementDecision is the outcome of Sidecar evaluation. Conforms to
+// AARM R4 (https://aarm.dev/spec): ALLOW/DENY/ABORT/MODIFY/STEP_UP/DEFER.
+// A 0 (UNSPECIFIED) value is reserved and must never be emitted by the
+// Sidecar; receivers should treat it as a protocol error.
 enum EnforcementDecision {
   ENFORCEMENT_DECISION_UNSPECIFIED = 0;
   // ALLOW — envelope forwarded to Connector.
@@ -188,6 +191,16 @@ enum EnforcementDecision {
   ENFORCEMENT_DECISION_DENY = 2;
   // ABORT — mid-flight kill sent to agent and Connector.
   ENFORCEMENT_DECISION_ABORT = 3;
+  // MODIFY — envelope forwarded to Connector with a modification applied
+  // (e.g. redaction, substitution). The modification description is opaque to
+  // the wire contract and recorded in audit.
+  ENFORCEMENT_DECISION_MODIFY = 4;
+  // STEP_UP — call blocked pending stronger authentication. The agent must
+  // re-request after completing the required identity challenge.
+  ENFORCEMENT_DECISION_STEP_UP = 5;
+  // DEFER — call blocked pending asynchronous approval (human-in-the-loop).
+  // The agent may retry once the deferred decision is resolved.
+  ENFORCEMENT_DECISION_DEFER = 6;
 }
 
 // PolicyBundle is the set of Cedar policy files distributed from

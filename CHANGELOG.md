@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.2.0
+
+Released on 2026-06-28
+
+### Added
+
+- **types:** add `ENFORCEMENT_DECISION_MODIFY`, `ENFORCEMENT_DECISION_STEP_UP`,
+  and `ENFORCEMENT_DECISION_DEFER` to `EnforcementDecision` (AARM R4
+  conformance). Adding enum variants is wire-compatible (proto3 enums are
+  open) but a breaking change for Rust consumers that match exhaustively;
+  hence the minor bump on the 0.x crate.
+
 ## 0.1.2
 
 Released on 2026-06-22
