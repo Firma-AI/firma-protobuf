@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.1.3
+
+Released on 2026-06-30
+
+### Fixed
+
+- bump to 0.1.3; 0.1.2 already exists on crates.io
+- add Vendor firma-protobuf wire contract and extend with AARM R4 decisions
+
 ## 0.1.2
 
 Released on 2026-06-22
