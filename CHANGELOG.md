@@ -2,7 +2,7 @@
 
 ## 0.2.0
 
-Released on 2026-06-28
+Released on 2026-07-22
 
 ### Added
 
@@ -11,6 +11,12 @@ Released on 2026-06-28
   conformance). Adding enum variants is wire-compatible (proto3 enums are
   open) but a breaking change for Rust consumers that match exhaustively;
   hence the minor bump on the 0.x crate.
+- **audit, types:** add provenance-chain, conversation-thread, and parent-action
+  fields to execution events and metadata (AARM R2 G2 conformance)
+- **types:** drop budget fields from the wire contract —
+  `ExecutionMetadata.budget_consumed` (tag 5) and `CapabilityToken.budget_ceiling`
+  (tag 11). Both tag numbers and field names are reserved so they are never
+  reused. This is a breaking wire change; consumers must upgrade.
 
 ## 0.1.2
 

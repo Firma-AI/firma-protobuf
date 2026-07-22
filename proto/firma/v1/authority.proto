@@ -11,7 +11,7 @@ import "google/protobuf/timestamp.proto";
 //
 // The Authority is the control-plane component that evaluates policies at
 // issuance time and issues capability tokens. It defines the permission
-// perimeter before execution begins (scope, budget, expiry) and distributes
+// perimeter before execution begins (scope, expiry) and distributes
 // policy bundles and revocations to Sidecars.
 //
 // Key invariant: the Authority is contacted only at pre-flight (capability
