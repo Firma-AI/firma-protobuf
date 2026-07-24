@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.3.0
+
+Released on 2026-07-27
+
+### Added
+
+- **audit**: add `ComposioContext` type and `composio_context` field to `ExecutionEvent`.
+
 ## 0.2.0
 
 Released on 2026-07-22

@@ -29,6 +29,28 @@ service AuditService {
   rpc StreamEvents(stream ExecutionEvent) returns (StreamEventsResponse);
 }
 
+// ComposioContext identifies one logical action decoded from a Composio
+// execution request. It intentionally excludes arguments and transport
+// headers so audit records do not retain request secrets.
+message ComposioContext {
+  // Pinned toolkit identifier, such as "gmail".
+  string toolkit = 1;
+  // Pinned Composio tool slug.
+  string tool_slug = 2;
+  // Composio user selector. PAi assistant values use the existing
+  // "pai-assistant:<bot_uuid>" namespace.
+  optional string user_id = 3;
+  // Requested connected account selector. This may be an identifier or alias
+  // and does not prove which account Composio ultimately used.
+  optional string connected_account_id = 4;
+  // Tool Router or hosted MCP session identity.
+  optional string session_id = 5;
+  // Zero-based logical child index for multi-execute requests.
+  optional uint32 batch_index = 6;
+  // Total logical children for multi-execute requests.
+  optional uint32 batch_size = 7;
+}
+
 // ExecutionEvent is the immutable audit record for a single enforcement
 // decision. Every field before `signature` is covered by the ECDSA
 // signature, making the event independently verifiable.
@@ -57,7 +79,7 @@ message ExecutionEvent {
   string bundle_version = 11;
   // Event timestamp with nanosecond precision.
   google.protobuf.Timestamp timestamp = 12;
-  // ECDSA signature (DER-encoded) over all preceding fields.
+  // ECDSA signature (DER-encoded) over every event field except this field.
   bytes signature = 13;
   // HTTP status code returned by the connector. Zero when the call
   // never dispatched (pre-dispatch DENY or ABORT).
@@ -88,6 +110,10 @@ message ExecutionEvent {
   // anchor of the prior admitted action in this thread. Empty for the
   // first admitted action or pre-dispatch outcomes. Covered by `signature`.
   string parent_action_id = 20;
+  // Logical Composio metadata. Absent for non-Composio events. This field is
+  // covered by `signature`; Sidecar and audit consumers must be upgraded
+  // together before accepting signed Composio events.
+  optional ComposioContext composio_context = 21;
 }
 
 // StreamEventsResponse is returned when the client half-closes the stream.
