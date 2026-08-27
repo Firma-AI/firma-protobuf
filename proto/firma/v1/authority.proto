@@ -3,6 +3,7 @@ syntax = "proto3";
 package firma.v1;
 
 import "firma/v1/types.proto";
+import "google/protobuf/duration.proto";
 import "google/protobuf/timestamp.proto";
 
 // =============================================================================
@@ -28,6 +29,15 @@ service AuthorityService {
   // reason code. Called at session start or during a session to obtain
   // additional or refreshed capability tokens.
   rpc IssueCapability(IssueCapabilityRequest) returns (IssueCapabilityResponse);
+
+  // GetApprovalOutcome returns the outcome of a pending HITL approval opened
+  // by IssueCapability (decision == PENDING_APPROVAL). The caller polls with
+  // the same Sidecar credentials that opened the request; the Authority
+  // releases the outcome only to the workspace, sidecar, agent, and session
+  // that opened it. A missing approval and a binding mismatch are
+  // indistinguishable (both NOT_FOUND), so the RPC never reveals whether an
+  // approval exists for someone else.
+  rpc GetApprovalOutcome(GetApprovalOutcomeRequest) returns (GetApprovalOutcomeResponse);
 
   // WatchPolicyBundle is a persistent server-streaming call. Immediately streams
   // the current policy bundle on connect, then pushes incremental updates.
@@ -69,6 +79,13 @@ message IssueCapabilityRequest {
   int32 requested_ttl_seconds = 5;
   // Credentials authenticating the connecting Sidecar.
   SidecarCredentials credentials = 6;
+  // Client-chosen idempotency key for this issuance attempt, unique per
+  // authenticated identity and session. Retrying with the same id and the
+  // same request returns the already-opened approval instead of opening a
+  // second one. optional so the Authority can distinguish legacy clients
+  // (absent: non-idempotent legacy behavior) from new clients, which must
+  // set it.
+  optional string issuance_attempt_id = 7;
 }
 
 // IssueDecision is the tri-state outcome of an IssueCapability evaluation.
@@ -124,6 +141,51 @@ message IssueCapabilityResponse {
   // decision == PENDING_APPROVAL.
   google.protobuf.Timestamp approval_expiry = 8;
 }
+
+// GetApprovalOutcomeRequest polls the outcome of one pending approval.
+message GetApprovalOutcomeRequest {
+  // Credentials authenticating the connecting Sidecar. Workspace, sidecar,
+  // and agent identity derive from these, never from other request fields.
+  SidecarCredentials credentials = 1;
+  // Approval record id returned by IssueCapability.
+  string approval_id = 2;
+  // Session that opened the approval; must match the persisted request.
+  string session_id = 3;
+}
+
+// GetApprovalOutcomeResponse carries exactly one pending or terminal outcome.
+message GetApprovalOutcomeResponse {
+  oneof outcome {
+    PendingApproval pending = 1;
+    GrantedApproval granted = 2;
+    DeniedApproval denied = 3;
+    ExpiredApproval expired = 4;
+  }
+}
+
+// PendingApproval: no decision yet; poll again.
+message PendingApproval {
+  // When the pending approval expires; polling past this deadline is useless.
+  google.protobuf.Timestamp expires_at = 1;
+  // Server-suggested minimum delay before the next poll. Advisory: clients
+  // apply their own jitter and backoff and never poll past the deadline.
+  google.protobuf.Duration retry_after = 2;
+}
+
+// GrantedApproval: an operator approved the request and the Authority issued
+// the capability. Retrieval is repeatable: a retry after a lost response
+// returns the same capability.
+message GrantedApproval {
+  // The signed capability token issued from the approved perimeter.
+  CapabilityToken token = 1;
+}
+
+// DeniedApproval: an operator denied the request. Terminal; no token exists.
+message DeniedApproval {}
+
+// ExpiredApproval: the request expired before a decision. Terminal; no token
+// exists.
+message ExpiredApproval {}
 
 // WatchPolicyBundleRequest initiates a policy bundle subscription.
 message WatchPolicyBundleRequest {
