@@ -16,6 +16,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let mut prost_config = prost_build::Config::new();
     prost_config.protoc_executable(protoc_bin_vendored::protoc_bin_path()?);
+    // The granted arm of the outcome oneof embeds a full CapabilityToken and
+    // dwarfs the other variants; boxing it keeps the generated enum small
+    // (clippy::large_enum_variant under `-D warnings`).
+    prost_config.boxed(".firma.v1.GetApprovalOutcomeResponse.outcome.granted");
 
     // Generate both client and server glue: openfirma's Sidecar drives the
     // client, firma-team's Authority serves the server.
